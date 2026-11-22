@@ -5,6 +5,32 @@ let client;
 let db;
 let connectionPromise;
 
+async function createIndexes(database) {
+  await Promise.all([
+    database.collection("studios").createIndex({
+      ownerEmail: 1,
+      createdAt: -1,
+    }),
+
+    database.collection("studios").createIndex({
+      category: 1,
+      rating: -1,
+      createdAt: -1,
+    }),
+
+    database.collection("bookings").createIndex({
+      studioId: 1,
+      date: 1,
+      status: 1,
+    }),
+
+    database.collection("bookings").createIndex({
+      guestEmail: 1,
+      createdAt: -1,
+    }),
+  ]);
+}
+
 export async function getDb() {
   if (db) return db;
 
@@ -17,8 +43,12 @@ export async function getDb() {
 
     connectionPromise = client
       .connect()
-      .then(() => {
-        db = client.db("studiospace");
+      .then(async () => {
+        const database = client.db("studiospace");
+
+        await createIndexes(database);
+
+        db = database;
         return db;
       })
       .catch(async (error) => {
