@@ -1,0 +1,3 @@
+export type Review={name:string;rating:number;comment:string;date?:string};
+export type Studio={_id:string;title:string;category:string;hourlyRate:number;securityDeposit:number;maxCapacity:number;location:string;image:string;gallery:string[];amenities:string[];overview:string;rating:number;reviewsCount:number;reviews:Review[];ownerEmail:string;ownerName:string;createdAt?:string};
+export type Booking={_id:string;studioId:string;studioTitle:string;studioImage:string;guestEmail:string;guestName:string;ownerEmail:string;date:string;startTime:string;endTime:string;hours:number;totalPrice:number;status:"Pending"|"Confirmed"|"Completed"|"Cancelled";createdAt:string};

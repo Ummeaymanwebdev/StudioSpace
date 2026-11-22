@@ -1,0 +1,2 @@
+import Link from "next/link";import {Aperture} from "lucide-react";
+export default function NotFound(){return <div className="container flex min-h-[60vh] flex-col items-center justify-center text-center"><Aperture className="h-20 w-20 text-green-700"/><p className="eyebrow mt-5">404 · Lost in the studio</p><h1 className="mt-2 text-5xl font-black">This space doesn't exist</h1><p className="mt-3 text-gray-600">The page may have moved or the link may be incorrect.</p><Link href="/" className="btn btn-primary mt-6">Return to Home</Link></div>}

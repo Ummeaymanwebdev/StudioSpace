@@ -1,0 +1,1 @@
+export default function LoadingGrid(){return <div className="grid-cards">{[1,2,3].map(i=><div key={i} className="card animate-pulse"><div className="h-52 bg-green-100"/><div className="space-y-3 p-4"><div className="h-4 w-2/3 rounded bg-green-100"/><div className="h-4 w-1/2 rounded bg-green-100"/><div className="h-10 rounded-full bg-green-100"/></div></div>)}</div>}
