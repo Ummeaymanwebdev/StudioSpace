@@ -96,7 +96,7 @@ Create a `.env.local` file in the `studiospace-client` directory:
 
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:5000/api
-BETTER_AUTH_SECRET=your_better_auth_secret
+BETTER_AUTH_SECRET=ad4c2e7fd22c29f2010c39edb23dce20bb2dd2a3e2477a30b1a01eefdb83062e
 BETTER_AUTH_URL=http://localhost:3000
 ```
 
@@ -123,8 +123,9 @@ Create a `.env` file in the `studiospace-server` directory:
 
 ```env
 PORT=5000
-MONGODB_URI=your_mongodb_connection_string
-JWT_SECRET=your_jwt_secret
+MONGODB_URI=mongodb+srv://umme12ayman_db_user:afiyan.12.ummeayman@cluster0.nsv2my8.mongodb.net/
+JWT_SECRET=ad4c2e7fd22c29f2010c39edb23dce20bb2dd2a3e2477a30b1a01eefdb83062e
+
 CLIENT_URL=http://localhost:3000
 ```
 
