@@ -65,15 +65,34 @@ export default function EditStudio() {
     }
   }
 
-  if (loading) {
-    return (
-      <div className="container section">
-        <p className="text-center text-gray-500">
-          Loading studio...
-        </p>
+  
+if (loading) {
+  return (
+    <div className="container section max-w-3xl">
+      <div className="animate-pulse">
+        <div className="h-4 w-48 rounded bg-green-100" />
+        <div className="mt-3 h-9 w-64 rounded bg-green-100" />
+
+        <div className="card mt-6 grid gap-5 p-6 sm:grid-cols-2">
+          {[1, 2, 3, 4, 5, 6].map((item) => (
+            <div key={item}>
+              <div className="mb-2 h-4 w-28 rounded bg-green-100" />
+              <div className="h-11 rounded-lg bg-green-100" />
+            </div>
+          ))}
+
+          <div className="sm:col-span-2">
+            <div className="mb-2 h-4 w-32 rounded bg-green-100" />
+            <div className="h-24 rounded-lg bg-green-100" />
+          </div>
+
+          <div className="h-11 rounded-full bg-green-100 sm:col-span-2" />
+        </div>
       </div>
-    );
-  }
+    </div>
+  );
+}
+
 
   if (!form) {
     return (
