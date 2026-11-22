@@ -2,7 +2,7 @@
 export async function requireAuth(req, res, next) {
   try {
     const response = await fetch(
-      `${process.env.CLIENT_URL}/api/session`,
+      `${process.env.CLIENT_URL}/api/auth/get-session`,
       {
         method: "GET",
         headers: {
@@ -19,14 +19,18 @@ export async function requireAuth(req, res, next) {
 
     const data = await response.json();
 
-    if (!data.user?.email) {
+    if (!data?.user?.email) {
       return res.status(401).json({
         message: "Invalid session",
       });
     }
 
-    req.user = data.user;
-    next();
+    req.user = {
+      email: data.user.email,
+      name: data.user.name || data.user.email,
+    };
+
+    return next();
   } catch (error) {
     console.error("Authentication error:", error);
 
