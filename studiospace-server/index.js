@@ -99,7 +99,7 @@ app.post("/api/auth/logout", (req, res) => {
 });
 
 // Get all studios
-app.get("/api/studios", async (req, res) => {
+app.get("/api/studios", async (req, res, next) => {
   try {
     const db = await getDb();
     const { category, q } = req.query;
@@ -125,13 +125,13 @@ app.get("/api/studios", async (req, res) => {
       .toArray();
 
     res.json(items);
-  } catch (e) {
-    res.status(500).json({ message: e.message });
+  } catch (error) {
+    next(error);
   }
 });
 
 // Get studios by owner
-app.get("/api/studios/owner/:email", async (req, res) => {
+app.get("/api/studios/owner/:email", async (req, res, next) => {
   try {
     const db = await getDb();
 
@@ -141,13 +141,13 @@ app.get("/api/studios/owner/:email", async (req, res) => {
         .sort({ createdAt: -1 })
         .toArray()
     );
-  } catch (e) {
-    res.status(500).json({ message: e.message });
+  } catch (error) {
+    next(error);
   }
 });
 
 // Get single studio
-app.get("/api/studios/:id", async (req, res) => {
+app.get("/api/studios/:id", async (req, res, next) => {
   try {
     if (!validId(req.params.id)) {
       return res.status(400).json({
@@ -168,13 +168,13 @@ app.get("/api/studios/:id", async (req, res) => {
     }
 
     res.json(item);
-  } catch (e) {
-    res.status(500).json({ message: e.message });
+  } catch (error) {
+    next(error);
   }
 });
 
 // Create studio
-app.post("/api/studios", requireAuth, async (req, res) => {
+app.post("/api/studios", requireAuth, async (req, res, next) => {
   try {
     const body = req.body;
     const validationError = validateStudioInput(body);
@@ -204,13 +204,13 @@ app.post("/api/studios", requireAuth, async (req, res) => {
       ...doc,
       _id: result.insertedId,
     });
-  } catch (e) {
-    res.status(500).json({ message: e.message });
+  } catch (error) {
+    next(error);
   }
 });
 
 // Update studio
-app.patch("/api/studios/:id", requireAuth, async (req, res) => {
+app.patch("/api/studios/:id", requireAuth, async (req, res, next) => {
   try {
     if (!validId(req.params.id)) {
       return res.status(400).json({
@@ -268,13 +268,13 @@ app.patch("/api/studios/:id", requireAuth, async (req, res) => {
     );
 
     res.json(await col.findOne({ _id: current._id }));
-  } catch (e) {
-    res.status(500).json({ message: e.message });
+  } catch (error) {
+    next(error);
   }
 });
 
 // Delete studio
-app.delete("/api/studios/:id", requireAuth, async (req, res) => {
+app.delete("/api/studios/:id", requireAuth, async (req, res, next) => {
   try {
     if (!validId(req.params.id)) {
       return res.status(400).json({
@@ -304,8 +304,8 @@ app.delete("/api/studios/:id", requireAuth, async (req, res) => {
     await col.deleteOne({ _id: current._id });
 
     res.json({ message: "Studio deleted" });
-  } catch (e) {
-    res.status(500).json({ message: e.message });
+  } catch (error) {
+    next(error);
   }
 });
 
@@ -340,8 +340,8 @@ function isValidDate(date) {
   );
 }
 
-// Create Booking - Only logged-in users
-app.post("/api/bookings", requireAuth, async (req, res) => {
+// Create Booking
+app.post("/api/bookings", requireAuth, async (req, res, next) => {
   try {
     const {
       studioId,
@@ -378,14 +378,16 @@ app.post("/api/bookings", requireAuth, async (req, res) => {
         message: "Studio not found",
       });
     }
-if (
-  studio.ownerEmail?.toLowerCase() ===
-  req.user.email.toLowerCase()
-) {
-  return res.status(403).json({
-    message: "You cannot book your own studio",
-  });
-}
+
+    if (
+      studio.ownerEmail?.toLowerCase() ===
+      req.user.email.toLowerCase()
+    ) {
+      return res.status(403).json({
+        message: "You cannot book your own studio",
+      });
+    }
+
     const clashes = await db.collection("bookings")
       .find({
         studioId,
@@ -431,13 +433,13 @@ if (
       ...doc,
       _id: result.insertedId,
     });
-  } catch (e) {
-    res.status(500).json({ message: e.message });
+  } catch (error) {
+    next(error);
   }
 });
 
 // My Bookings
-app.get("/api/bookings/guest/:email", requireAuth, async (req, res) => {
+app.get("/api/bookings/guest/:email", requireAuth, async (req, res, next) => {
   try {
     if (
       req.params.email.toLowerCase() !==
@@ -456,13 +458,13 @@ app.get("/api/bookings/guest/:email", requireAuth, async (req, res) => {
       .toArray();
 
     res.json(bookings);
-  } catch (e) {
-    res.status(500).json({ message: e.message });
+  } catch (error) {
+    next(error);
   }
 });
 
 // Cancel Booking
-app.patch("/api/bookings/:id/cancel", requireAuth, async (req, res) => {
+app.patch("/api/bookings/:id/cancel", requireAuth, async (req, res, next) => {
   try {
     if (!validId(req.params.id)) {
       return res.status(400).json({
@@ -490,9 +492,34 @@ app.patch("/api/bookings/:id/cancel", requireAuth, async (req, res) => {
     }
 
     res.json({ message: "Booking cancelled" });
-  } catch (e) {
-    res.status(500).json({ message: e.message });
+  } catch (error) {
+    next(error);
   }
+});
+
+// Handle unknown routes
+app.use((req, res) => {
+  res.status(404).json({
+    message: `Route not found: ${req.method} ${req.originalUrl}`,
+  });
+});
+
+// Centralized error handler
+app.use((error, req, res, next) => {
+  console.error("API Error:", error);
+
+  if (res.headersSent) {
+    return next(error);
+  }
+
+  const statusCode = error.statusCode || error.status || 500;
+
+  res.status(statusCode).json({
+    message:
+      statusCode >= 500
+        ? "Internal server error"
+        : error.message || "Something went wrong",
+  });
 });
 
 app.listen(port, () => {
