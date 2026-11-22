@@ -44,20 +44,20 @@ export default function Navbar() {
         : "font-bold text-gray-700"
     }`;
 
-async function updateProfileImage() {
-  const { error } = await authClient.updateUser({
-    image: "/profile.jpg",
-  });
+  async function updateProfileImage() {
+    const { error } = await authClient.updateUser({
+      image: "/profile.jpg",
+    });
 
-  if (error) {
-    toast.error(error.message);
-    return;
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+
+    await refetch();
+    toast.success("Profile image updated!");
+    setProfileOpen(false);
   }
-
-  await refetch();
-  toast.success("Profile image updated!");
-  setProfileOpen(false);
-}
 
   async function handleLogout() {
     try {
@@ -73,11 +73,11 @@ async function updateProfileImage() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-green-900/10 bg-[#fffef0]/95 backdrop-blur">
-      <div className="container flex h-[70px] items-center justify-between gap-4">
+      <div className="container flex h-[70px] items-center justify-between gap-3 sm:gap-4">
         {/* Logo */}
         <Link
           href="/"
-          className="flex items-center gap-2 text-2xl font-black tracking-tight"
+          className="flex shrink-0 items-center gap-2 text-xl font-black tracking-tight sm:text-2xl"
         >
           <Aperture className="h-9 w-9 text-green-700" />
           <span>
@@ -107,6 +107,7 @@ async function updateProfileImage() {
               <button
                 onClick={() => setProfileOpen(!profileOpen)}
                 className="flex items-center gap-2 rounded-full border border-green-900/15 px-3 py-2 font-semibold text-gray-800 hover:bg-green-50"
+                aria-expanded={profileOpen}
               >
                 {user.image ? (
                   <img
@@ -163,12 +164,14 @@ async function updateProfileImage() {
                     My Bookings
                   </Link>
 
-                   <button onClick={updateProfileImage}
-                   className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left hover:bg-green-100">
-                  <UserCircle size={18} />
-                   Update Profile Photo
-                     </button>
-                     
+                  <button
+                    onClick={updateProfileImage}
+                    className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left hover:bg-green-100"
+                  >
+                    <UserCircle size={18} />
+                    Update Profile Photo
+                  </button>
+
                   <div className="my-2 border-t border-green-900/10" />
 
                   <button
@@ -195,9 +198,11 @@ async function updateProfileImage() {
 
         {/* Mobile Menu Button */}
         <button
-          className="md:hidden"
+          className="rounded-lg p-2 transition hover:bg-green-100 md:hidden"
           onClick={() => setOpen(!open)}
-          aria-label="Toggle menu"
+          aria-label={open ? "Close menu" : "Open menu"}
+          aria-expanded={open}
+          aria-controls="mobile-navigation"
         >
           {open ? <X /> : <Menu />}
         </button>
@@ -205,7 +210,10 @@ async function updateProfileImage() {
 
       {/* Mobile Navigation */}
       {open && (
-        <div className="container flex flex-col gap-3 border-t border-green-900/10 pb-4 pt-4 md:hidden">
+        <div
+          id="mobile-navigation"
+          className="container flex max-h-[calc(100vh-70px)] flex-col gap-3 overflow-y-auto border-t border-green-900/10 pb-4 pt-4 md:hidden"
+        >
           {navLinks.map((link) => (
             <Link
               key={link.href}
@@ -230,16 +238,26 @@ async function updateProfileImage() {
               <Link href="/dashboard" onClick={() => setOpen(false)}>
                 Dashboard
               </Link>
+
               <Link href="/add-studio" onClick={() => setOpen(false)}>
                 Add New Studio
               </Link>
+
               <Link href="/my-listings" onClick={() => setOpen(false)}>
                 My Studio Listings
               </Link>
+
               <Link href="/my-bookings" onClick={() => setOpen(false)}>
                 My Bookings
               </Link>
-               
+
+              <button
+                onClick={updateProfileImage}
+                className="text-left"
+              >
+                Update Profile Photo
+              </button>
+
               <button
                 onClick={handleLogout}
                 className="text-left font-semibold text-red-600"
@@ -252,6 +270,7 @@ async function updateProfileImage() {
               <Link href="/login" onClick={() => setOpen(false)}>
                 Login
               </Link>
+
               <Link href="/register" onClick={() => setOpen(false)}>
                 Register
               </Link>
