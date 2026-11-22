@@ -11,6 +11,7 @@ export default function MyBookings() {
   const { data: session, isPending } = authClient.useSession();
   const [items, setItems] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
 
   const email = session?.user?.email;
 
@@ -39,7 +40,9 @@ export default function MyBookings() {
   }, [email, isPending]);
 
   async function cancel(id: string) {
-    if (!email) return;
+    if (!email || cancellingId) return;
+
+    setCancellingId(id);
 
     try {
       await cancelBooking(id, email);
@@ -49,6 +52,8 @@ export default function MyBookings() {
       toast.error(
         e instanceof Error ? e.message : "Cancel failed"
       );
+    } finally {
+      setCancellingId(null);
     }
   }
 
@@ -61,7 +66,7 @@ export default function MyBookings() {
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="card flex flex-col gap-4 p-4 animate-pulse sm:flex-row sm:items-center"
+              className="card flex animate-pulse flex-col gap-4 p-4 sm:flex-row sm:items-center"
             >
               <div className="h-28 w-full rounded-xl bg-green-100 sm:w-40" />
 
@@ -122,8 +127,11 @@ export default function MyBookings() {
                 <button
                   className="btn btn-outline"
                   onClick={() => cancel(b._id)}
+                  disabled={cancellingId !== null}
                 >
-                  Cancel Booking
+                  {cancellingId === b._id
+                    ? "Cancelling..."
+                    : "Cancel Booking"}
                 </button>
               )}
             </div>
