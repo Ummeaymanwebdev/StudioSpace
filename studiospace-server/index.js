@@ -378,7 +378,14 @@ app.post("/api/bookings", requireAuth, async (req, res) => {
         message: "Studio not found",
       });
     }
-
+if (
+  studio.ownerEmail?.toLowerCase() ===
+  req.user.email.toLowerCase()
+) {
+  return res.status(403).json({
+    message: "You cannot book your own studio",
+  });
+}
     const clashes = await db.collection("bookings")
       .find({
         studioId,
