@@ -37,6 +37,23 @@ export default function MyListings() {
       .finally(() => setLoading(false));
   }, [email, isPending]);
 
+  // Close delete modal with Escape key
+  useEffect(() => {
+    if (!deleteId || deleting) return;
+
+    function handleEscape(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        setDeleteId(null);
+      }
+    }
+
+    window.addEventListener("keydown", handleEscape);
+
+    return () => {
+      window.removeEventListener("keydown", handleEscape);
+    };
+  }, [deleteId, deleting]);
+
   async function removeStudio() {
     if (!deleteId) return;
 
@@ -44,9 +61,11 @@ export default function MyListings() {
 
     try {
       await deleteStudio(deleteId);
+
       setItems((previous) =>
         previous.filter((studio) => studio._id !== deleteId)
       );
+
       toast.success("Studio listing deleted successfully");
       setDeleteId(null);
     } catch (error) {
@@ -58,43 +77,42 @@ export default function MyListings() {
     }
   }
 
-  
-if (isPending || loading) {
-  return (
-    <div className="container section">
-      <div className="mb-7 flex items-center justify-between">
-        <div className="space-y-3">
-          <div className="h-4 w-36 animate-pulse rounded bg-green-100" />
-          <div className="h-9 w-56 animate-pulse rounded bg-green-100" />
-        </div>
-        <div className="h-11 w-40 animate-pulse rounded-full bg-green-100" />
-      </div>
-
-      <div className="grid gap-4">
-        {[1, 2, 3].map((i) => (
-          <div
-            key={i}
-            className="card flex flex-col gap-4 p-4 animate-pulse sm:flex-row sm:items-center"
-          >
-            <div className="h-36 w-full rounded-xl bg-green-100 sm:w-44" />
-
-            <div className="flex-1 space-y-3">
-              <div className="h-5 w-20 rounded bg-green-100" />
-              <div className="h-5 w-2/3 rounded bg-green-100" />
-              <div className="h-4 w-1/2 rounded bg-green-100" />
-            </div>
-
-            <div className="flex gap-2">
-              <div className="h-10 w-24 rounded-full bg-green-100" />
-              <div className="h-10 w-24 rounded-full bg-green-100" />
-            </div>
+  if (isPending || loading) {
+    return (
+      <div className="container section">
+        <div className="mb-7 flex items-center justify-between">
+          <div className="space-y-3">
+            <div className="h-4 w-36 animate-pulse rounded bg-green-100" />
+            <div className="h-9 w-56 animate-pulse rounded bg-green-100" />
           </div>
-        ))}
-      </div>
-    </div>
-  );
-}
 
+          <div className="h-11 w-40 animate-pulse rounded-full bg-green-100" />
+        </div>
+
+        <div className="grid gap-4">
+          {[1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className="card flex animate-pulse flex-col gap-4 p-4 sm:flex-row sm:items-center"
+            >
+              <div className="h-36 w-full rounded-xl bg-green-100 sm:w-44" />
+
+              <div className="flex-1 space-y-3">
+                <div className="h-5 w-20 rounded bg-green-100" />
+                <div className="h-5 w-2/3 rounded bg-green-100" />
+                <div className="h-4 w-1/2 rounded bg-green-100" />
+              </div>
+
+              <div className="flex gap-2">
+                <div className="h-10 w-24 rounded-full bg-green-100" />
+                <div className="h-10 w-24 rounded-full bg-green-100" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   if (!email) {
     return (
@@ -178,9 +196,20 @@ if (isPending || loading) {
 
       {deleteId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="card w-full max-w-md p-6">
+          <div
+            className="card w-full max-w-md p-6"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-title"
+          >
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-black">Delete Studio?</h2>
+              <h2
+                id="delete-title"
+                className="text-xl font-black"
+              >
+                Delete Studio?
+              </h2>
+
               <button
                 onClick={() => setDeleteId(null)}
                 disabled={deleting}
