@@ -1,3 +1,98 @@
+
 "use client";
-import Link from "next/link";import {useState} from "react";import {authClient} from "@/lib/auth-client";import {toast} from "sonner";import {useRouter} from "next/navigation";
-export default function Register(){const [name,setName]=useState(""),[email,setEmail]=useState(""),[photo,setPhoto]=useState(""),[password,setPassword]=useState("");const router=useRouter();async function submit(e:React.FormEvent){e.preventDefault();if(!/[A-Z]/.test(password)||!/[a-z]/.test(password)||password.length<6){toast.error("Password needs uppercase, lowercase and at least 6 characters");return}try{const r=await authClient.signUp.email({name,email,password,image:photo});if(r.error)throw new Error(r.error.message);toast.success("Registration successful. Please login.");router.push("/login")}catch(e){toast.error(e instanceof Error?e.message:"Registration failed")}}return <div className="container section max-w-md"><div className="card p-7"><p className="eyebrow">Join the creator community</p><h1 className="mb-6 mt-1 text-3xl font-black">Create an account</h1><form onSubmit={submit} className="space-y-4">{[["Name",name,setName,"text"],["Email",email,setEmail,"email"],["Photo URL",photo,setPhoto,"url"],["Password",password,setPassword,"password"]].map(([label,value,set,type]:any)=><label key={label} className="block text-sm font-bold">{label}<input className="input mt-1" type={type} value={value} onChange={e=>set(e.target.value)} required/></label>)}<p className="text-xs text-gray-500">Password: uppercase + lowercase + minimum 6 characters.</p><button className="btn btn-primary w-full">Register</button></form><p className="mt-5 text-center text-sm">Already registered? <Link className="font-bold text-green-700" href="/login">Login</Link></p></div></div>}
+
+import Link from "next/link";
+import { useState } from "react";
+import { authClient } from "@/lib/auth-client";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+
+export default function Register() {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [photo, setPhoto] = useState("");
+  const [password, setPassword] = useState("");
+  const router = useRouter();
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+
+    if (
+      !/[A-Z]/.test(password) ||
+      !/[a-z]/.test(password) ||
+      password.length < 6
+    ) {
+      toast.error(
+        "Password needs uppercase, lowercase and at least 6 characters"
+      );
+      return;
+    }
+
+    try {
+      const r = await authClient.signUp.email({
+        name,
+        email,
+        password,
+        image: photo,
+      });
+
+      if (r.error) throw new Error(r.error.message);
+
+      toast.success("Registration successful. Please login.");
+      router.push("/login");
+    } catch (e) {
+      toast.error(
+        e instanceof Error ? e.message : "Registration failed"
+      );
+    }
+  }
+
+  const fields = [
+    ["Name", name, setName, "text", "name"],
+    ["Email", email, setEmail, "email", "email"],
+    ["Photo URL", photo, setPhoto, "url", "url"],
+    ["Password", password, setPassword, "password", "new-password"],
+  ] as const;
+
+  return (
+    <div className="container section max-w-md">
+      <div className="card p-7">
+        <p className="eyebrow">Join the creator community</p>
+        <h1 className="mb-6 mt-1 text-3xl font-black">
+          Create an account
+        </h1>
+
+        <form onSubmit={submit} className="space-y-4">
+          {fields.map(([label, value, set, type, autoComplete]) => (
+            <label key={label} className="block text-sm font-bold">
+              {label}
+              <input
+                className="input mt-1"
+                type={type}
+                autoComplete={autoComplete}
+                value={value}
+                onChange={(e) => set(e.target.value)}
+                required
+              />
+            </label>
+          ))}
+
+          <p className="text-xs text-gray-500">
+            Password: uppercase + lowercase + minimum 6 characters.
+          </p>
+
+          <button className="btn btn-primary w-full">
+            Register
+          </button>
+        </form>
+
+        <p className="mt-5 text-center text-sm">
+          Already registered?{" "}
+          <Link className="font-bold text-green-700" href="/login">
+            Login
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
+}
