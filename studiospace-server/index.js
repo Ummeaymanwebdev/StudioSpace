@@ -22,6 +22,41 @@ const port = process.env.PORT || 5000;
 
 const validId = (id) => ObjectId.isValid(id);
 
+// Studio input validation
+const studioTextFields = [
+  "title",
+  "category",
+  "location",
+  "image",
+  "overview",
+];
+
+function validateStudioInput(body, partial = false) {
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
+    return "Invalid studio data";
+  }
+
+  for (const field of studioTextFields) {
+    if (!partial && !body[field]) {
+      return `${field} is required`;
+    }
+
+    if (
+      field in body &&
+      (typeof body[field] !== "string" || !body[field].trim())
+    ) {
+      return `${field} must be a non-empty string`;
+    }
+  }
+
+  if ("gallery" in body && !Array.isArray(body.gallery)) {
+    return "Gallery must be an array";
+  }
+
+  return null;
+}
+
+// Health check
 app.get("/api/health", (req, res) => {
   res.json({
     ok: true,
@@ -142,21 +177,12 @@ app.get("/api/studios/:id", async (req, res) => {
 app.post("/api/studios", requireAuth, async (req, res) => {
   try {
     const body = req.body;
+    const validationError = validateStudioInput(body);
 
-    const required = [
-      "title",
-      "category",
-      "location",
-      "image",
-      "overview",
-    ];
-
-    for (const k of required) {
-      if (!body[k]) {
-        return res.status(400).json({
-          message: `${k} is required`,
-        });
-      }
+    if (validationError) {
+      return res.status(400).json({
+        message: validationError,
+      });
     }
 
     const db = await getDb();
@@ -211,11 +237,25 @@ app.patch("/api/studios/:id", requireAuth, async (req, res) => {
       });
     }
 
-    const { $set, ...safe } = req.body;
+    const { $set, ...safe } = req.body || {};
 
     delete safe._id;
     delete safe.ownerEmail;
     delete safe.ownerName;
+
+    if (Object.keys(safe).length === 0) {
+      return res.status(400).json({
+        message: "Please provide studio details to update",
+      });
+    }
+
+    const validationError = validateStudioInput(safe, true);
+
+    if (validationError) {
+      return res.status(400).json({
+        message: validationError,
+      });
+    }
 
     await col.updateOne(
       { _id: current._id },
