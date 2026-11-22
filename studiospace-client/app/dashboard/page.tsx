@@ -21,13 +21,31 @@ export default function DashboardPage() {
     }
   }, [isPending, session, router]);
 
-  if (isPending || !session) {
+  if (isPending) {
     return (
-      <main className="flex min-h-[60vh] items-center justify-center bg-[#fffef0]">
-        <p className="font-semibold text-green-800">Loading dashboard...</p>
+      <main className="min-h-[70vh] bg-[#fffef0] px-4 py-12">
+        <div className="mx-auto max-w-6xl animate-pulse">
+          <div className="h-9 w-64 rounded-lg bg-green-100" />
+          <div className="mt-3 h-5 w-80 max-w-full rounded bg-green-100" />
+
+          <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3].map((item) => (
+              <div
+                key={item}
+                className="rounded-2xl border border-green-900/10 bg-white p-6"
+              >
+                <div className="h-9 w-9 rounded-lg bg-green-100" />
+                <div className="mt-4 h-6 w-2/3 rounded bg-green-100" />
+                <div className="mt-3 h-4 w-full rounded bg-green-100" />
+              </div>
+            ))}
+          </div>
+        </div>
       </main>
     );
   }
+
+  if (!session) return null;
 
   const actions = [
     {
