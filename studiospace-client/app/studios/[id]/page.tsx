@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -30,7 +29,7 @@ export default function StudioDetailsPage() {
   const router = useRouter();
   const id = params.id as string;
 
-const { data: session } = authClient.useSession();
+  const { data: session } = authClient.useSession();
 
   const [studio, setStudio] = useState<Studio | null>(null);
   const [loading, setLoading] = useState(true);
@@ -44,6 +43,23 @@ const { data: session } = authClient.useSession();
     startTime: "",
     endTime: "",
   });
+
+  // Close booking modal with Escape key
+  useEffect(() => {
+    if (!bookingOpen || bookingBusy) return;
+
+    function handleEscape(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        setBookingOpen(false);
+      }
+    }
+
+    window.addEventListener("keydown", handleEscape);
+
+    return () => {
+      window.removeEventListener("keydown", handleEscape);
+    };
+  }, [bookingOpen, bookingBusy]);
 
   useEffect(() => {
     if (!id) return;
@@ -359,7 +375,7 @@ const { data: session } = authClient.useSession();
               <div className="mt-4 grid gap-4">
                 {reviews.map((review, index) => (
                   <div
-                   key={index}
+                    key={index}
                     className="card p-4"
                   >
                     <div className="flex items-center justify-between">
@@ -420,11 +436,19 @@ const { data: session } = authClient.useSession();
       {/* Booking Modal */}
       {bookingOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl">
+          <div
+            className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="booking-modal-title"
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="eyebrow">Reserve your workspace</p>
-                <h2 className="mt-1 text-2xl font-black">
+                <h2
+                  id="booking-modal-title"
+                  className="mt-1 text-2xl font-black"
+                >
                   Book This Studio
                 </h2>
               </div>
@@ -432,7 +456,8 @@ const { data: session } = authClient.useSession();
               <button
                 type="button"
                 onClick={() => setBookingOpen(false)}
-                className="rounded-full bg-gray-100 p-2"
+                disabled={bookingBusy}
+                className="rounded-full bg-gray-100 p-2 disabled:cursor-not-allowed disabled:opacity-50"
                 aria-label="Close booking modal"
               >
                 <X size={20} />
